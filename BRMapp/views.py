@@ -4,7 +4,32 @@ from BRMapp import models
 from django.http import HttpResponse,HttpResponseRedirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User,auth
 
+def register(request):
+    data={}
+    if request.method=="POST":
+        first_name=request.POST['first_name']
+        last_name=request.POST['last_name']
+        username=request.POST['username']
+        email=request.POST['email']
+        password=request.POST['password']
+        confirm_password=request.POST['confirm_password']
+        if first_name=="" or last_name=="" or username=="" or email=="" or password =="":
+            return render(request,'BRMapp/user_register.html',{'error1':True})
+        if password==confirm_password:
+            if User.objects.filter(username=username).exists():
+                data['error']='Username already exists'
+                return render(request,'BRMapp/user_register.html',data)
+            else:
+              user=User.objects.create_user(username=username,password=password,email=email,first_name=first_name,last_name=last_name)
+              user.save()
+              return HttpResponseRedirect('BRMapp/login') 
+        else:
+            data['error']='Password is not matched. Please re-type the password!'
+            return render(request,'BRMapp/user_register.html',data)
+    else:
+     return render(request,'BRMapp/user_register.html',data)
 def userLogin(request):
     data={}
     if request.method=="POST":
